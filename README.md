@@ -2,7 +2,7 @@
 
 ## Installation
 
-`npm install -g @conterra/amd-to-es6`
+`npm install -g ct-amd-to-es6`
 
 ## Usage
 
