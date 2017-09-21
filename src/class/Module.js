@@ -10,21 +10,27 @@ const isDefineWithObjectExpression = require("../lib/isDefineWithObjectExpressio
 class Module extends AbstractSyntaxTree {
 
     convert (options) {
+        var body = this.ast.body;
+        var leadingComments = (body && body[0] && body[0].leadingComments) || [];
         var define = this.first('CallExpression[callee.name=define]');
         if (isDefineWithObjectExpression(define)) {
             this.ast.body = [{
                 type: "ExportDefaultDeclaration",
-                declaration: define.arguments[0]
+                declaration: define.arguments[0],
+                leadingComments: leadingComments
             }];
         } else {
             var dependencies = getDependencies(define);
             var nodes = getModuleCode(this.ast);
             var imports = generateImports(dependencies, options);
             var code = generateCode(this.ast, nodes, options);
-            this.ast.body = imports.concat(code);
+            body = imports.concat(code);
+            if (body[0]) {
+                body[0].leadingComments = leadingComments;
+            }
+            this.ast.body = body;
             this.removeUseStrict();
         }
-        
     }
 
     removeUseStrict () {

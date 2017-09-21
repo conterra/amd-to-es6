@@ -7,7 +7,7 @@ function getArrayExpressionValues (node) {
 }
 
 function getFunctionParameters (node) {
-    return node.params.map(param => param.name);
+    return !node.params ? [] : node.params.map(param => param.name);
 }
 
 module.exports = function (node) {

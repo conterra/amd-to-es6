@@ -8,6 +8,11 @@ function compare (result, output) {
 }
 
 function convert (dir, options) {
+    options = options || {};
+    if (options.comments === undefined){
+        // here disable comments to keep test true
+        options.comments = false;
+    }
     const file1 = path.join(__dirname, "../fixture/", dir, "/input.js");
     const file2 = path.join(__dirname, "../fixture/", dir, "/output.js");
     const input = fs.readFileSync(file1, "utf8");
@@ -63,6 +68,10 @@ test("it should work for named module", t => {
 
 test("it should work for named module with arrow function", t => {
     t.truthy(convert("amdjs-api/named-module-arrow-fn"));
+});
+
+test("it should convert import list modules correctly by ignoring second parameter", t => {
+    t.truthy(convert("amdjs-api/import-list-module",{comments:true}));
 });
 
 test("it should work for an anonymous module", t => {

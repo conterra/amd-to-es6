@@ -33,30 +33,38 @@ function getGlob (options) {
 
 function convertFile (file, options) {
     var filepath = path.join(process.cwd(), file);
-    var content = fs.readFileSync(filepath, "utf8");
-    var compiled = amdtoes6(content, options);
-    if (program.replace) {
-        var destpath = replaceSuffix(filepath, program.suffix);
-        if (program.suffix) {
-            fs.unlinkSync(filepath);
+    try{
+        var content = fs.readFileSync(filepath, "utf8");
+        var compiled = amdtoes6(content, options);
+        if (program.replace) {
+            var destpath = replaceSuffix(filepath, program.suffix);
+            if (program.suffix) {
+                fs.unlinkSync(filepath);
+            }
+            fs.writeFileSync(destpath, compiled);
+        } else {
+            process.stdout.write(compiled);
         }
-        fs.writeFileSync(destpath, compiled);
-    } else {
-        process.stdout.write(compiled);
+    }catch(e){
+        process.stderr.write("Could not convert file '"+file+"' error: "+e + "\n");
     }
 }
 
 function convertFiles (files, options) {
     files.forEach(function (file) {
         var filepath = path.join(program.src, file);
-        var content = fs.readFileSync(filepath, "utf8");
-        var compiled = amdtoes6(content, options);
-        var destpath = program.replace ? filepath : path.join(program.dest, file);
-        if (program.suffix) {
-            fs.unlinkSync(filepath);
+        try{
+            var content = fs.readFileSync(filepath, "utf8");
+            var compiled = amdtoes6(content, options);
+            var destpath = program.replace ? filepath : path.join(program.dest, file);
+            if (program.suffix) {
+                fs.unlinkSync(filepath);
+            }
+            destpath = replaceSuffix(destpath, program.suffix);
+            fs.writeFileSync(destpath, compiled);
+        }catch(e){
+            process.stderr.write("Could not convert file '"+file+"' error: "+e + "\n");
         }
-        destpath = replaceSuffix(destpath, program.suffix);
-        fs.writeFileSync(destpath, compiled);
     });
 }
 

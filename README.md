@@ -1,99 +1,75 @@
 # AMD to ES6 converter
 
-[ ![Codeship Status for buxlabs/buxlabs.amd-to-es6](https://app.codeship.com/projects/f6299130-6721-0134-f3f9-02d00f1d3243/status?branch=master)](https://app.codeship.com/projects/176125)
-
 ## Installation
 
-`npm install -g @buxlabs/amd-to-es6`
+`npm install -g @conterra/amd-to-es6`
 
 ## Usage
 
-### cli
+This project is intended to convert map.apps bundles to ES6 import syntax.
 
-Convert a single file with:
+Convert a bundle recursively with:
 
-`amdtoes6 app.js > app-es6.js`
+`amdtoes6 --src=bundle-dir --replace --quotes=double --glob=**/*.js`
 
-Convert multiple files in given dir with:
 
-`amdtoes6 --src=src --dest=build`
+### Problems:
 
-Convert multiple files in given dir recursively with:
+This tool will produce `export default` statements. In some cases this will lead to problems,
+because it makes the converted file incompatible to bundles which still use the old 'define' code.
 
-`amdtoes6 --src=src --dest=build --glob=**/*.js`
+This can be 'fixed' by replacing `export default` with `module.exports = `.
+But in the future if all bundles are converted to ES6, the use of `export default` is the correct way.
 
-Convert multiple files and replace them with:
+### Effects
 
-`amdtoes6 --src=src --replace`
+#### MyComponent.js
 
-### node
-
-Convert a single file with:
-
-```javascript
-const amdtoes6 = require('@buxlabs/amd-to-es6');
-const source = 'define({ hello: 'world' });';
-const result = amdtoes6(source); // export default { hello: 'world' };
 ```
-
-## Examples:
-
-**AMD**
-
-```javascript
 define([
-    'core/view',
-    'subapp/hello/template/layout'
-], function (View, template) {
-    'use strict';
+    "dojo/_base/declare",
+    "./Other"
+], function(declare, Other){
 
-    return View.extend({
-        template: template
-    });
-
-});
-```
-
-**ES6**
-
-```javascript
-import View from 'core/view';
-import template from 'subapp/hello/template/layout';
-
-export default View.extend({
-    template: template
-});
-```
-
-**AMD**
-
-```javascript
-define(function (require) {
-    'use strict';
-
-    var Marionette = require('marionette');
-
-    return Marionette.Object.extend({
-        initialize: function () {
-            console.log('hello world');
-        }
+    return declare([],{
+         startup: function(){
+            this.other = new Other();
+         }
     });
 });
 ```
 
-**ES6**
+ES6
 
-```javascript
-import Marionette from 'marionette';
+```
+import declare from "dojo/_base/declare";
+import Other from "./Other";
 
-export default Marionette.Object.extend({
-    initialize: function () {
-        console.log('hello world');
-    }
-});
+export default declare([],{
+         startup: function(){
+            this.other = new Other();
+         }
+    });
 ```
 
-There are more examples in the test/fixture directory
+#### module.js
+
+AMD
+
+```
+define([
+    "./MyComponent",
+    "./OtherComponent"
+], {});
+```
+
+ES6
+
+```
+import "./MyComponent";
+import "./OtherComponent";
+;
+```
 
 ### Options
 ```sh
@@ -112,10 +88,8 @@ There are more examples in the test/fixture directory
     --side              Import side effects with camel cased named
     --assigned          Automatically assign custom name to side effects
     --quotes            Single, double or auto quotes in the output
-    --comments          Basic comments, copy them to the top of the output file
-
 ```
 
-## Inspired by:
+## Forked and extended for map.apps requirements from:
 
-https://github.com/jonbretman/amd-to-as6
+https://github.com/buxlabs/amd-to-es6
